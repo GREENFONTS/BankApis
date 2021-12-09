@@ -3,46 +3,15 @@ const express = require("express");
 const prisma = new PrismaClient();
 const router = express.Router();
 const jwt = require("jsonwebtoken");
-const { adminAuthenticated } = require("./config/auth");
+const { adminAuthenticated } = require("../config/auth");
 const { v4: uuidv4 } = require("uuid");
-
-
-//acctNo generator
-const randomGenerator = () => {
-  return Math.ceil(Math.random() * 10000000000)
-}
+const { addAdmin, Login, randomGenerator } = require("../functions");
 
 //admin signup
 router.post("/register", (req, res) => {
-  try {
-    async function addAdmin() {
-      const { Email, password, role } = req.body;
-
-      let user = await prisma.admin.findFirst({
-        where: {
-          email: Email,
-          password: password,
-        },
-      });
-      console.log(user, req.body)
-
-      if (user != null) {
-        error.push({
-          msg: "Admin already exists found",
-        });
-      } else {
-        await prisma.admin.create({
-          data: {
-            email: Email,
-            password: password,
-            role: role,
-            id: uuidv4(),
-          },
-        });
-      }
-      res.send("admin registration successful");
-    }
-    addAdmin(req, res)
+  const { Email, password } = req.body;
+  try {    
+    addAdmin(req, res, Email, password)
       .catch((err) => {
         throw err;
       })
@@ -51,41 +20,15 @@ router.post("/register", (req, res) => {
       });
   } catch (err) {
     console.log(err);
-  }
-  
+  } 
+   res.send("Registration successful");
 });
 
 //admin login
 router.post("/", (req, res) => {
-  try {
-    async function adminPost() {
-      const { Email, password } = req.body;
-
-      let user = await prisma.admin.findUnique({
-        where: {
-          email: Email,
-        },
-      });
-      if (user == null) {
-          res.send('Admin not found')
-      } else if (user.password != password) {
-        res.send("password is Incorrect");
-        
-      } else {
-        const token = jwt.sign(
-          { user_id: user.id, Email },
-          process.env.TOKEN_KEY,
-          {
-            expiresIn: "2h",
-          }
-        );
-        let session = req.session;
-        session.token = token;
-        session.user = user;
-        res.redirect("/dashboard");
-      }
-    }
-    adminPost(req, res)
+  const { Email, password } = req.body;
+  try {   
+    Login(req, res, Email, password, "admin")
       .catch((err) => {
         throw err;
       })
@@ -96,11 +39,6 @@ router.post("/", (req, res) => {
     console.log(err);
   }
 });
-
-//dashboard
-router.get("/dashboard", adminAuthenticated, (req, res) => {
-    res.send("Welcome to admin dashboard")
-})
 
 //add users 
 router.post("/addUser", adminAuthenticated, async (req, res) => {
@@ -144,7 +82,6 @@ router.post("/addUser", adminAuthenticated, async (req, res) => {
 router.post('/deleteUser', adminAuthenticated, async(req, res) => {
   const { acctNo } = req.body;
     
-    console.log(acctNo)
     try {
       await prisma.user.deleteMany({
         where: {
@@ -221,12 +158,12 @@ router.post('/reverse', adminAuthenticated, async (req, res) => {
  });
 
 //disable users
-router.get('/disableUser/', adminAuthenticated, async (req, res) => {
+router.get('/disableUser/:id', adminAuthenticated, async (req, res) => {
   const id = req.params.id
   try {
-    await prisma.user.update({
+    await prisma.user.updateMany({
       where: {
-        id: id
+        acctNo: parseInt(id)
       },
       data: {
         status: "inactive"

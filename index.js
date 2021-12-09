@@ -21,8 +21,8 @@ app.use(
   })
 );
 
-app.use("/", require("./admin"));
-app.use("/user", require("./user"));
+app.use("/", require("./apis/admin"));
+app.use("/user", require("./apis/user"));
 
 
 app.use(express.static("public"));

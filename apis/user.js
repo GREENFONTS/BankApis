@@ -3,40 +3,15 @@ const express = require("express");
 const prisma = new PrismaClient();
 const router = express.Router();
 const jwt = require("jsonwebtoken");
-const { userAuthenticated } = require("./config/auth");
+const { userAuthenticated } = require("../config/auth");
 const { v4: uuidv4 } = require("uuid");
+const { Transact, Login } = require("../functions");
 
 //user login
 router.post("/", (req, res) => {
-  try {
-    async function adminPost() {
-      const { Email, password } = req.body;
-
-      let user = await prisma.user.findFirst({
-        where: {
-          email: Email,
-        },
-      });
-      if (user == null) {
-          res.send('User not found')
-      } else if (user.password != password) {
-        res.send("password is Incorrect");
-        
-      } else {
-        const token = jwt.sign(
-          { user_id: user.id, Email },
-          process.env.TOKEN_KEY,
-          {
-            expiresIn: "2h",
-          }
-        );
-        let session = req.session;
-        session.token = token;
-        session.user = user;
-        res.send("login successful")
-      }
-    }
-    adminPost(req, res)
+    const { Email, password } = req.body;
+  try {   
+    Login(req, res, Email, password, "user")
       .catch((err) => {
         throw err;
       })
@@ -45,91 +20,20 @@ router.post("/", (req, res) => {
       });
   } catch (err) {
     console.log(err);
-  }
+    }
+    //  res.send("Login successful");
 });
 
 //deposit money
 router.post('/deposit', userAuthenticated, async (req, res) => {
     const { acctNo, amount } = req.body;
-    let user = await prisma.user.findFirst({
-        where: {
-            acctNo: parseInt(acctNo)
-        }
-    });
-    let id = uuidv4()
-    try {
-        await prisma.user.updateMany({
-            where: {
-                acctNo: parseInt(acctNo)
-            },
-            data: {
-                balance: (user.balance + parseInt(amount))
-            }
-        })
-        await prisma.transaction.create({
-            data: {
-                acctNo: user.acctNo,
-                amount: parseInt(amount),
-                date: new Date(),
-                status: "",
-                id: id
-            }
-        })
-    }
-    catch (err) {
-        throw err
-    }
-    await prisma.transaction.update({
-        where: {
-            id: id
-        },
-        data: {
-            status: "success"
-        }
-    })
-    res.send("deposited successfully")
+    Transact(req, res, acctNo, amount, "+", "deposited")
 });
 
 //withdraw money
 router.post('/withdraw', userAuthenticated, async (req, res) => {
     const { acctNo, amount } = req.body;
-    let user = await prisma.user.findFirst({
-        where: {
-            acctNo: parseInt(acctNo)
-        }
-    });
-    let id = uuidv4()
-    try {
-        await prisma.user.updateMany({
-            where: {
-                acctNo: parseInt(acctNo)
-            },
-            data: {
-                balance: (user.balance - parseInt(amount))
-            }
-        })
-        await prisma.transaction.create({
-            data: {
-                acctNo: user.acctNo,
-                amount: parseInt(amount),
-                date: new Date(),
-                status: "",
-                id: id
-            }
-        })
-    }
-    catch (err) {
-        throw err
-    }
-    await prisma.transaction.updateMany({
-        where: {
-            id: id
-        },
-        data: {
-            status: "success"
-        }
-    })
-    res.send("withdrawal successful")
+    Transact(req, res, acctNo, amount, "-", "withdrawal")
 });
 
 //user transfer

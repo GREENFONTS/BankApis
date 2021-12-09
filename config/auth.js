@@ -5,6 +5,9 @@ dotenv.config();
 module.exports = {
   adminAuthenticated: function (req, res, next) {
     let token = req.session.token;
+    if (req.session.user.role == undefined) {
+      res.sendStatus(403);
+    }
     if (!token | (req.session.user.role != "admin")) {
       res.sendStatus(403);
     }
@@ -19,7 +22,8 @@ module.exports = {
     }
   },
 
-  userAuthenticated: function (req, res, next) {
+  userAuthenticated:  (req, res, next) => {
+
     let token = req.session.token;
     if (!token | (req.session.user.role != "user")) {
       res.sendStatus(403);
