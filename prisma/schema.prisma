@@ -1,0 +1,45 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgres"
+  url      = env("DATABASE_URL")
+}
+
+model admin {
+  email    String @id
+  password String
+  id       String
+  role String
+}
+
+model user {
+  firstName String 
+  lastName String
+  email String 
+  password String
+  Tel String
+  balance  Int 
+  status String
+  acctNo Int
+  id String @id
+  role String
+}
+
+model transfer {
+  sender  Int
+  reciever  Int
+  amount Int
+  status String
+  date DateTime
+  id String @id
+}
+
+model transaction {
+  acctNo  Int
+  amount Int
+  status String
+  date DateTime
+  id String @id
+}
