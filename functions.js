@@ -72,15 +72,26 @@ module.exports = {
   },
 
   //user transaction (deposit or withdraw)
-    Transact: async (req, res, acctNo, amount, operator, action) => {
-      console.log(acctNo, amount, operator, action);
+  Transact: async (req, res, acctNo, amount, operator, action) => {
+     
     let user = await prisma.user.findFirst({
       where: {
         acctNo: parseInt(acctNo),
       },
     });
+    if (user.acctNo != req.session.user.acctNo) {
+      res.sendStatus(403)
+    }
+    if (user.status == "inactive") {
+      res.send("account is inactive")
+    }
     let id = uuidv4();
-    try {
+      try {
+        if (action == "withdraw") {
+          if (amount > user.balance) {
+          res.send("Insufficient Fund")
+          }
+      }
       await prisma.user.updateMany({
         where: {
           acctNo: parseInt(acctNo),

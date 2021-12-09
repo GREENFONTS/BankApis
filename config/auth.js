@@ -25,6 +25,9 @@ module.exports = {
   userAuthenticated:  (req, res, next) => {
 
     let token = req.session.token;
+    if (req.session.user.role == undefined) {
+      res.sendStatus(403);
+    }
     if (!token | (req.session.user.role != "user")) {
       res.sendStatus(403);
     }

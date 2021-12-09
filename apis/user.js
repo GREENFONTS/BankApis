@@ -21,19 +21,19 @@ router.post("/", (req, res) => {
   } catch (err) {
     console.log(err);
     }
-    //  res.send("Login successful");
+    
 });
 
 //deposit money
 router.post('/deposit', userAuthenticated, async (req, res) => {
     const { acctNo, amount } = req.body;
-    Transact(req, res, acctNo, amount, "+", "deposited")
+    Transact(req, res, acctNo, amount, "+", "deposit")
 });
 
 //withdraw money
 router.post('/withdraw', userAuthenticated, async (req, res) => {
     const { acctNo, amount } = req.body;
-    Transact(req, res, acctNo, amount, "-", "withdrawal")
+    Transact(req, res, acctNo, amount, "-", "withdraw")
 });
 
 //user transfer
@@ -46,23 +46,32 @@ router.post('/transfer', userAuthenticated, async (req, res) => {
             email: req.session.user.email
         }
     });
+
     //get reciever
     const reciever = await prisma.user.findFirst({
         where: {
             acctNo: parseInt(recieverNo)
         }
-    })
+    });
+    if (reciever == null | undefined) {
+        res.send("Account number is Incorrect")
+    }
 
     try {
         //update sender's balance
-        await prisma.user.updateMany({
-            where: {
-                acctNo: sender.acctNo
-            },
-            data: {
-                balance: (sender.balance - parseInt(amount))
-            }
-        });
+        if (sender.balance < parseInt(amount)) {
+            res.send("Insufficient fund")
+        }
+        else {
+            await prisma.user.updateMany({
+                where: {
+                    acctNo: sender.acctNo
+                },
+                data: {
+                    balance: (sender.balance - parseInt(amount))
+                }
+            });
+        }
 
         //update reciever's balance
         await prisma.user.updateMany({
