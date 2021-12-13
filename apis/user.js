@@ -39,6 +39,11 @@ router.post('/withdraw', userAuthenticated, async (req, res) => {
 //user transfer
 router.post('/transfer', userAuthenticated, async (req, res) => {
     const { recieverNo, amount } = req.body;
+     try {
+       parseInt(acctNo);
+     } catch {
+       res.status(404).send("AccountNo input is invalid");
+     }
     const id = uuidv4()
     //get sender
     const sender = await prisma.user.findFirst({
@@ -46,6 +51,9 @@ router.post('/transfer', userAuthenticated, async (req, res) => {
             email: req.session.user.email
         }
     });
+    if (sender.status == "inactive") {
+      res.status(403).send("account is inactive");
+    }
 
     //get reciever
     const reciever = await prisma.user.findFirst({
@@ -53,6 +61,9 @@ router.post('/transfer', userAuthenticated, async (req, res) => {
             acctNo: parseInt(recieverNo)
         }
     });
+     if (reciever.status == "inactive") {
+       res.status(403).send(" Reciever's account is inactive");
+     }
     if (reciever == null | undefined) {
         res.send("Account number is Incorrect")
     }
@@ -116,6 +127,9 @@ router.post('/transactions', userAuthenticated, async (req, res) => {
             email: req.session.user.email
         }
     })
+    if (user.status == "inactive") {
+      res.status(403).send("account is inactive");
+    }
     const transfers = await prisma.transfer.findMany({
         where: {
             OR: [

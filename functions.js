@@ -8,8 +8,13 @@ const { v4: uuidv4 } = require("uuid");
 
 module.exports = {
   //acctNo generator
-  randomGenerator: () => {
-    return Math.ceil(Math.random() * 10000000000);
+  randomGenerator: (length) => {
+    let acctNo = []; let i = 0;
+    while (i < length) {
+    let num =  Math.floor(Math.random() * 10);
+      acctNo.push(num)
+    }
+    return acctNo.join("")
   },
   //addAdmin function
   addAdmin: async (req, res, Email, password) => {
@@ -73,7 +78,13 @@ module.exports = {
 
   //user transaction (deposit or withdraw)
   Transact: async (req, res, acctNo, amount, operator, action) => {
-     
+    try {
+      parseInt(acctNo)
+    }
+    catch {
+      res.status(404).send("AccountNo input is invalid")
+    }
+    
     let user = await prisma.user.findFirst({
       where: {
         acctNo: parseInt(acctNo),
@@ -83,7 +94,7 @@ module.exports = {
       res.sendStatus(403)
     }
     if (user.status == "inactive") {
-      res.send("account is inactive")
+      res.status(403).send("account is inactive")
     }
     let id = uuidv4();
       try {
