@@ -6,7 +6,7 @@ const jwt = require("jsonwebtoken");
 const { userAuthenticated } = require("../auth/auth");
 const { v4: uuidv4 } = require("uuid");
 const { Transact } = require('../services/Transact');
-const { Login } = require('../services/Login');
+const { Login } = require('../services/login');
 
 //user login
 router.post("/", (req, res) => {

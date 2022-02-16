@@ -7,7 +7,7 @@ const { adminAuthenticated } = require("../auth/auth");
 const { v4: uuidv4 } = require("uuid");
 const { randomGenerator} = require('../services/randomGenerator');
 const { addAdmin } = require('../services/addAdmin');
-const { Login } = require('../services/Login');
+const { Login } = require('../services/login');
 
 router.get('/', (req, res) => {
   res.status(200).send('Welcome to our standard bank Apis')
