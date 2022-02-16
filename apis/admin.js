@@ -31,7 +31,7 @@ router.post("/register", (req, res) => {
 });
 
 //admin login
-router.post("/", (req, res) => {
+router.post("/login", (req, res) => {
   const { Email, password } = req.body;
   try {   
     Login(req, res, Email, password, "admin")
@@ -48,7 +48,7 @@ router.post("/", (req, res) => {
 
 //add users 
 router.post("/addUser", adminAuthenticated, async (req, res) => {
-  const { firstName, lastName, email, Tel, balance, role, password } = req.body;
+  const { firstName, lastName, email, tel, balance, role, password } = req.body;
   let acctNo = randomGenerator()
   let checkUser = await prisma.user.findFirst({
     where: {
@@ -72,7 +72,7 @@ router.post("/addUser", adminAuthenticated, async (req, res) => {
       email: email,
       role: role,
       password: password,
-      Tel: Tel,
+      Tel: tel,
       balance: parseInt(balance),
       status: "active",
       acctNo: acctNo,
