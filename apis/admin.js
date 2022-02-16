@@ -3,15 +3,21 @@ const express = require("express");
 const prisma = new PrismaClient();
 const router = express.Router();
 const jwt = require("jsonwebtoken");
-const { adminAuthenticated } = require("../config/auth");
+const { adminAuthenticated } = require("../auth/auth");
 const { v4: uuidv4 } = require("uuid");
-const { addAdmin, Login, randomGenerator } = require("../functions");
+const { randomGenerator} = require('../services/randomGenerator');
+const { addAdmin } = require('../services/addAdmin');
+const { Login } = require('../services/Login');
+
+router.get('/', (req, res) => {
+  res.status(200).send('Welcome to our standard bank Apis')
+})
 
 //admin signup
 router.post("/register", (req, res) => {
-  const { Email, password } = req.body;
+  const { firstName, lastName, userName, Email, password } = req.body;
   try {    
-    addAdmin(req, res, Email, password)
+    addAdmin(req, res, firstName, lastName, userName, Email, password, )
       .catch((err) => {
         throw err;
       })
@@ -77,6 +83,17 @@ router.post("/addUser", adminAuthenticated, async (req, res) => {
   res.json(user)
   
 });
+
+//get all users
+router.get('/users', adminAuthenticated, async(req, res) => {
+  try{
+    let users = await prisma.user.find({})
+    res.status(200).send({users: users})
+  }
+  catch(err){
+    res.status(500).send(err)
+  }
+})
 
 //delete users
 router.post('/deleteUser', adminAuthenticated, async(req, res) => {

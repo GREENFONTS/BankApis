@@ -3,9 +3,10 @@ const express = require("express");
 const prisma = new PrismaClient();
 const router = express.Router();
 const jwt = require("jsonwebtoken");
-const { userAuthenticated } = require("../config/auth");
+const { userAuthenticated } = require("../auth/auth");
 const { v4: uuidv4 } = require("uuid");
-const { Transact, Login } = require("../functions");
+const { Transact } = require('../services/Transact');
+const { Login } = require('../services/Login');
 
 //user login
 router.post("/", (req, res) => {

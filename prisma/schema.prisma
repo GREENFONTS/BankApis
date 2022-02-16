@@ -8,6 +8,9 @@ datasource db {
 }
 
 model admin {
+  firstName String
+  lastName String
+  userName String
   email    String @id
   password String
   id       String
