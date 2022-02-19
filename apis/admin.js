@@ -171,7 +171,7 @@ router.post('/reverse', adminAuthenticated, async (req, res) => {
       status: "success",
     },
   });
-   res.send("reversed succesfully")
+   res.send(`Transaction with transaction id ${id} reversed successfully `)
  });
 
 //disable users
@@ -194,5 +194,32 @@ router.get('/disableUser/:id', adminAuthenticated, async (req, res) => {
   res.send(`User ${id} disabled` )
 });
 
+
+router.get('/enableUser/:id', adminAuthenticated, async (req, res) => {
+  const id = req.params.id
+  const user = await prisma.user.findFirst({where: {
+    id : id
+  }})
+  if(user.status == 'active'){
+    res.send('User is already active')
+  }
+  else{
+  try {
+    await prisma.user.updateMany({
+      where: {
+        acctNo: parseInt(id)
+      },
+      data: {
+        status: "active"
+      }
+    });
+  }
+  catch (err) {
+    throw err
+  }
+
+  res.send(`User ${id} enabled` )
+}
+});
 
 module.exports = router;

@@ -121,7 +121,7 @@ router.post('/transfer', userAuthenticated, async (req, res) => {
 });
 
 //getting list of transactions for user
-router.post('/transactions', userAuthenticated, async (req, res) => {
+router.get('/transactions', userAuthenticated, async (req, res) => {
     const transactions = []
     const user = await prisma.user.findFirst({
         where: {
